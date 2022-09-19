@@ -2,6 +2,7 @@ import json
 import time
 import os
 
+import aiogram
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
@@ -23,14 +24,14 @@ HEROES = ['Abaddon', 'Alchemist', 'Ancient Apparition', 'Anti-Mage', 'Arc Warden
           'Grimstroke', 'Gyrocopter', 'Hoodwink', 'Huskar', 'Invoker', 'Io', 'Jakiro', 'Juggernaut',
           'Keeper of the Light', 'Kunkka', 'Legion Commander', 'Leshrac', 'Lich', 'Lifestealer', 'Lina', 'Lion',
           'Lone Druid', 'Luna', 'Lycan', 'Magnus', 'Marci', 'Mars', 'Medusa', 'Meepo', 'Mirana', 'Monkey King', 'Morphling',
-          'Naga Siren', 'Natures Prophet', 'Necrophos', 'Night Stalker', 'Nyx Assassin', 'Ogre Magi', 'Omniknight',
-          'Oracle', 'Outworld Devourer', 'Pangolier', 'Phantom Assassin', 'Phantom Lancer', 'Phoenix', 'Primal Beast', 'Puck', 'Pudge',
+          'Naga Siren', 'Nature\'s Prophet', 'Necrophos', 'Night Stalker', 'Nyx Assassin', 'Ogre Magi', 'Omniknight',
+          'Oracle', 'Outworld Destroyer', 'Pangolier', 'Phantom Assassin', 'Phantom Lancer', 'Phoenix', 'Primal Beast', 'Puck', 'Pudge',
           'Pugna', 'Queen of Pain', 'Razor', 'Riki', 'Rubick', 'Sand King', 'Shadow Demon', 'Shadow Fiend',
           'Shadow Shaman', 'Silencer', 'Skywrath Mage', 'Slardar', 'Slark', 'Snapfire', 'Sniper', 'Spectre',
           'Spirit Breaker', 'Storm Spirit', 'Sven', 'Techies', 'Templar Assassin', 'Terrorblade', 'Tidehunter',
           'Timbersaw', 'Tinker', 'Tiny', 'Treant Protector', 'Troll Warlord', 'Tusk', 'Underlord', 'Undying', 'Ursa',
           'Vengeful Spirit', 'Venomancer', 'Viper', 'Visage', 'Void Spirit', 'Warlock', 'Weaver', 'Windranger',
-          'Winter Wyvern', 'Witch Doctor', 'Wraith King', 'Zeus']
+          'Winter Wyvern', 'Witch Doctor', 'Wraith King', 'Zeus'] # 123
 
 bot = Bot(token=token)
 
@@ -79,7 +80,7 @@ async def go(message: types.Message):
 async def go(message: types.Message):
     keyboard = InlineKeyboardMarkup()
     h100 = HEROES[:100]
-    h21 = HEROES[100:]
+    h23 = HEROES[100:]
     for i in range(0, len(h100) - 1, 3):
         keyboard.row(InlineKeyboardButton(h100[i], callback_data=f"n{i}"), InlineKeyboardButton(h100[i + 1],
                                                                                                 callback_data=f"n{i + 1}"),
@@ -89,10 +90,12 @@ async def go(message: types.Message):
     msg = await message.reply("Выберите героя команды Radiant или введите \"отмена\" для отмены",
                               reply_markup=keyboard)
     keyboard = InlineKeyboardMarkup()
-    for i in range(0, len(h21), 3):
-        keyboard.row(InlineKeyboardButton(h21[i], callback_data=f"n{HEROES.index(h21[i])}"), InlineKeyboardButton(h21[i + 1],
-                                                                                               callback_data=f"n{HEROES.index(h21[i + 1])}"),
-                     InlineKeyboardButton(h21[i + 2], callback_data=f"n{HEROES.index(h21[i + 2])}"))
+    for i in range(0, len(h23) - 2, 3):
+        keyboard.row(InlineKeyboardButton(h23[i], callback_data=f"n{HEROES.index(h23[i])}"), 
+            InlineKeyboardButton(h23[i + 1], callback_data=f"n{HEROES.index(h23[i + 1])}"),
+                     InlineKeyboardButton(h23[i + 2], callback_data=f"n{HEROES.index(h23[i + 2])}"))
+    keyboard.row(InlineKeyboardButton(h23[-2], callback_data=f"n{HEROES.index(h23[-2])}"), 
+        InlineKeyboardButton(h23[-1], callback_data=f"n{HEROES.index(h23[-1])}"))
     msg1 = await message.reply("-", reply_markup=keyboard)
 
     msg = msg.message_id
@@ -122,6 +125,7 @@ async def process(query: types.CallbackQuery):
     f.close()
 
     for hero_ind in data["processing"][str(query.message.chat.id)][2:]:
+        # print("number: " + str(hero_ind))
         if int(hero_ind) <= 99:
             h100.remove(HEROES[int(hero_ind)])
         else:
@@ -137,7 +141,7 @@ async def process(query: types.CallbackQuery):
     for i in range(1, len(h100) % 3 + 1):
         keyboard.row(InlineKeyboardButton(h100[-i], callback_data=f"n{HEROES.index(h100[-i])}"))
 
-    if len(h21) != 21:
+    if len(h21) != 23:
         keyboard1 = InlineKeyboardMarkup()
         for i in range(0, len(h21) - len(h21) % 3, 3):
             keyboard1.row(InlineKeyboardButton(h21[i], callback_data=f"n{HEROES.index(h21[i])}"),
@@ -196,26 +200,6 @@ async def process(query: types.CallbackQuery):
                                     chat_id=query.message.chat.id,
                                     message_id=data["processing"][str(query.message.chat.id)][1])
 
-
-        # tree = html.fromstring(content)
-        # plus = tree.xpath("//div[@id = \"good-picks\"]/div")
-        # minus = tree.xpath("//div[@id = \"bad-picks\"]/div")
-        # points = 0
-        # for hero in cur_heroes_rad:
-        # 	print(list(map(lambda x: str(x.xpath(".//h3")[0].text), plus)))
-        # 	print(list(map(lambda x: str(x.xpath(".//h3")[0].text), minus)))
-        # 	item = list(filter(lambda x: str(x.xpath(".//h3")[0].text) == hero, plus))
-        # 	if len(item) == 1:
-        # 		item = item[0]
-        # 		point = float(etree.tostring(item, pretty_print=True).split("rating: ")[1].split(" (")[0])
-        # 		points += point
-        # 	else:
-        # 		item = list(filter(lambda x: str(x.xpath(".//h3")[0].text) == hero, minus))
-        # 		if len(item) == 1:
-        # 			item = item[0]
-        # 			point = float(etree.tostring(item, pretty_print=True).split("rating: ")[1].split(" (")[0])
-        # 			points += point
-        	
         points = calculate(cur_heroes_rad, cur_heroes_dire)
 
         print(points)
@@ -225,13 +209,16 @@ async def process(query: types.CallbackQuery):
             text = f"Анализ окончен. Прогноз:\n\t Уверенная победа команды Dire"
         elif -2.0 < points < 0:
             text = f"Анализ окончен. Прогноз:\n\t Неуверенная победа команды Dire"
-        elif 0 <= points < 2:
+        elif 0 < points < 2:
             text = f"Анализ окончен. Прогноз:\n\t Неуверенная победа команды Radiant"
+        elif points == 0:
+            text = "Команды абсолютно равны"
         else:
             text = f"Анализ окончен. Прогноз:\n\t Уверенная победа команды Radiant"
 
         keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
         keyboard.add(KeyboardButton("/Go"))
+        await bot.send_photo(query.message.chat.id, open("screen.png", "rb"))
         await bot.send_message(query.message.chat.id, text, reply_markup=keyboard)
 
         with open("data.json", "r", encoding="utf-8") as f:
